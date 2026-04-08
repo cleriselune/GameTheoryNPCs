@@ -5,7 +5,12 @@ public class GameManager : MonoBehaviour
 {
     List<Country> countries = new List<Country>();
 
-    int years = 50;
+    public Country getCountry(int id)
+    {
+        return countries[id];
+    }
+
+    public int years = 50;
     int wars = 0;
     int alliances = 0;
 
@@ -43,14 +48,14 @@ public class GameManager : MonoBehaviour
                 continue;
             }
 
-            StrategyType strategyA = A.ChooseStrategy();
-            StrategyType strategyB = B.ChooseStrategy();
+            HawkDove.StrategyType strategyA = A.ChooseStrategy();
+            HawkDove.StrategyType strategyB = B.ChooseStrategy();
 
-            Vector2 payoff = GameTheory.HawkDovePayoff(strategyA, strategyB);
+            var (payA, payB) = HawkDove.Payoff(strategyA, strategyB, 20f, 20f); // V = economic strength, C = fixed cost of conflict
 
             // Update economic strength based on payoffs
-            A.economicStrength += payoff.x;
-            B.economicStrength += payoff.y;
+            A.economicStrength += payA;
+            B.economicStrength += payB;
 
             Debug.Log(A.countryName + " strategy: " + strategyA);
             Debug.Log(B.countryName + " strategy: " + strategyB);

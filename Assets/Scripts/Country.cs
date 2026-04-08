@@ -18,15 +18,15 @@ public class Country
     }
 
     // Method to choose a strategy based on aggression level
-    public StrategyType ChooseStrategy()
+    public HawkDove.StrategyType ChooseStrategy()
     {
         float rand = Random.value;
 
         if (rand < aggressionLevel) {
-            return StrategyType.Hawk;
+            return HawkDove.StrategyType.Hawk;
         }
         else {
-            return StrategyType.Dove;
+            return HawkDove.StrategyType.Dove;
         }
 
     }
@@ -34,9 +34,9 @@ public class Country
     // Method to decide action against another country based on chosen strategy
     public ActionType DecideAction(Country other)
     {
-        StrategyType myStrategy = ChooseStrategy();
+        HawkDove.StrategyType myStrategy = ChooseStrategy();
 
-        if (myStrategy == StrategyType.Hawk) {
+        if (myStrategy == HawkDove.StrategyType.Hawk) {
             return ActionType.Attack;
         }
         else {
