@@ -3,34 +3,63 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    List<Country> countries = new List<Country>();
-
-    public Country getCountry(int id)
-    {
-        return countries[id];
-    }
-
-    public int years = 50;
+    public WorldState world;
+    public DiplomacySystem diplomacy;
+    
+    int currentYear = 1444; // starting year
+    public int simTurns = 50; // how many years to simulate, can be set in inspector
     int wars = 0;
     int alliances = 0;
 
     void Start()
     {
         CSVLogger.CreateFile();
-        CreateCountries();
-        Simulate();
+        InitRelations();
+        // Simulate();
     }
 
-    void CreateCountries()
+    void InitRelations()
     {
-        // country, military power, economic strength, aggression level
-        countries.Add(new Country("France", 100, 50, 0.7f));
-        countries.Add(new Country("Austria", 80, 60, 0.4f));
-        countries.Add(new Country("Poland", 70, 40, 0.5f));
-        countries.Add(new Country("Ottomans", 120, 70, 0.8f));
+        var c = world.GetCountries();
+        for (int i = 0; i < c.Count; i++)
+        {
+            for (int j = i + 1; j < c.Count; j++)
+            {
+                if (c[i] == c[j]) continue; // skip same country, handled in Relation constructor but just in case
+                world.GetRelation(i, j); // this will create a relation if it doesn't exist
+                print("Initialized relation between " + c[i].countryName + " and " + c[j].countryName + " with initial opinion " + world.GetRelation(i, j).opinion);
+            }
+        }
+        print("Initialized " + world.GetCountries().Count + " countries and " + world.GetCountries().Count * (world.GetCountries().Count - 1) / 2 + " relations.");
+    
+
     }
 
-    void Simulate()
+    public void ProcessTurn()
+    {
+        // process every pair of countries through the diplomacy system
+
+        // shuffle to avoid first-mover bias
+        List<Relation> shuffled = new List<Relation>(world.GetRelations());
+        Shuffle(shuffled);
+        // process each relation
+        foreach (var relation in shuffled) {
+            diplomacy.ProcessPair(relation);
+        }
+
+        // advancing time
+        currentYear++;
+        Debug.Log($"=== Year {currentYear} complete ===");
+    }
+
+    void Shuffle<T>(List<T> list) {
+        for (int i = list.Count - 1; i > 0; i--) {
+            int j = Random.Range(0, i + 1);
+            (list[i], list[j]) = (list[j], list[i]);
+        }
+    }
+
+  /*  void Simulate()
     {
         for (int year = 0; year < years; year++)
         {
@@ -79,5 +108,6 @@ public class GameManager : MonoBehaviour
             CSVLogger.Log(year, warsThisYear, alliancesThisYear);
         }
     }
+    */
 
 }
