@@ -2,10 +2,10 @@ using UnityEngine;
 
 public class Relation : MonoBehaviour
 {
-    int idA;
-    int idB;
-    RelationState state = RelationState.Neutral; // default state is neutral
-    float opinion = 0; // opinion of each other, dunno if needed for now but im leaving it for now
+    public int idA;
+    public int idB;
+    public RelationState state = RelationState.Neutral; // default state is neutral
+    public float opinion = 0; // opinion of each other
     float allicanceTurns = 0; // how many turns have been in alliance, used for a timer of a timed alliance
     float warTurns = 0; // how many turns have been at war, used for a timer of a timed war
 
@@ -14,6 +14,23 @@ public class Relation : MonoBehaviour
     public const float ALLIANCE_DURATION = 5f; // duration of alliance in turns (years)
     public const float WAR_DURATION = 5f; // duration of war in turns (years);; will change this
 
+    public Relation(int idA, int idB)
+    {
+        if (idA == idB)
+        {
+            Debug.LogError("Cannot create a relation with the same country.");
+            return;
+        }
+        this.idA = idA;
+        this.idB = idB;
+    }
+
+    public void ModifyOpinion(float amount)
+    {
+        opinion += amount;
+        opinion = Mathf.Clamp(opinion, -100f, 100f); // clamp opinion between -100 and 100
+    }
+    
     public void Fire(RelationEvent relationEvent)
     {
         RelationState next = Evaluate(relationEvent);
@@ -77,6 +94,8 @@ public class Relation : MonoBehaviour
             // combat resolution here: A and B both lose 20% of the weaker side's military power
             warTurns = 0;
             Fire(RelationEvent.WarEnded); // war ended by timer
+            // modify opinion to neutral for it to increase to have a chance to form alliance again
+            opinion = 10f;
         }
     }
 
