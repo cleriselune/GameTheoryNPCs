@@ -42,11 +42,15 @@ public static class HawkDove
             _                      => 1.0f
         };
 
+        p *= Mathf.Lerp(0.5f, 1.5f, self.aggressionLevel); // aggressive countries push toward Hawk
+
         // global power check: if opponent is much stronger, back down
         float powerRatio = opp.militaryPower / Mathf.Max(self.militaryPower, 1f);
         if (powerRatio > 2f) p *= 0.3f;  // would be suicidal to attack since opponent is much stronger (militarypower wise)
 
-        return Random.value < p ? StrategyType.Hawk : StrategyType.Dove; // if random value is less than p, choose Hawk, otherwise choose Dove
+        p = Mathf.Clamp01(p); // ensure probability is between 0 and 1
+
+        return UnityEngine.Random.value < p ? StrategyType.Hawk : StrategyType.Dove; // if random value is less than p, choose Hawk, otherwise choose Dove
         // random value added to introduce some unpredictability and variation in strategies, simulating real-world decision making
     }
 }

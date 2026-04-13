@@ -6,21 +6,17 @@ public class WorldState : MonoBehaviour
     List<Country> countries = new List<Country>();
     List<Relation> relations = new List<Relation>();
 
-    void Start()
+    void Awake() // initialize countries and relations at the start of the game
     {
         CreateCountries();
     }
 
     void CreateCountries()
     {
-        Country france = new Country("France", 100, 50, 0.7f);
-        Country austria = new Country("Austria", 80, 60, 0.4f);
-        Country poland = new Country("Poland", 70, 40, 0.5f);
-        Country ottomans = new Country("Ottomans", 120, 70, 0.8f);
-        countries.Add(france);
-        countries.Add(austria);
-        countries.Add(poland);
-        countries.Add(ottomans);
+        countries.Add(new Country("France", militaryPower: 100, economicStrength: 90, aggressionLevel: 0.6f));
+        countries.Add(new Country("England", militaryPower: 60, economicStrength: 60, aggressionLevel: 0.2f));
+        countries.Add(new Country("Ottomans", militaryPower: 120, economicStrength: 80, aggressionLevel: 0.8f));
+        countries.Add(new Country("Poland", militaryPower: 70, economicStrength: 40, aggressionLevel: 0.5f));
     }
 
     public Country GetCountry(int id)

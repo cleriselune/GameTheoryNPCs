@@ -7,6 +7,7 @@ public enum RelationState {
 
 public enum RelationEvent {
     BothPlayedHawk, // Hawk-Dove outcome = war
+    BothPlayedDove, // Hawk-Dove outcome = alliance
     OpinionHighEnough, // opinion > threshold = ally
     AllyCalledToWar, // allied nation attacked = war
     AllianceExpired, // timer ran out = clean reset

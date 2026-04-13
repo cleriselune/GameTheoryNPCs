@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Relation : MonoBehaviour
+public class Relation
 {
     public int idA;
     public int idB;
@@ -8,6 +8,7 @@ public class Relation : MonoBehaviour
     public float opinion = 0; // opinion of each other
     float allicanceTurns = 0; // how many turns have been in alliance, used for a timer of a timed alliance
     float warTurns = 0; // how many turns have been at war, used for a timer of a timed war
+    public int truceTurnsRemaining = 0;
 
     //
     public const float ALLY_THRESHOLD = 80f; // opinion threshold to form alliance
@@ -16,19 +17,26 @@ public class Relation : MonoBehaviour
 
     public Relation(int idA, int idB)
     {
-        if (idA == idB)
+        if (idA != idB)
+        {
+            this.idA = idA;
+            this.idB = idB;
+        }
+        else
         {
             Debug.LogError("Cannot create a relation with the same country.");
-            return;
         }
-        this.idA = idA;
-        this.idB = idB;
     }
 
     public void ModifyOpinion(float amount)
     {
         opinion += amount;
         opinion = Mathf.Clamp(opinion, -100f, 100f); // clamp opinion between -100 and 100
+    }
+
+    public void ResetOpinion()
+    {
+        opinion = 0;
     }
     
     public void Fire(RelationEvent relationEvent)
@@ -44,8 +52,9 @@ public class Relation : MonoBehaviour
     RelationState Evaluate(RelationEvent relationEvent) => (state, relationEvent) switch
     {
         // neutral state transitions
-        (RelationState.Neutral, RelationEvent.OpinionHighEnough) => RelationState.Allied,
+        (RelationState.Neutral, RelationEvent.BothPlayedDove) => RelationState.Allied,
         (RelationState.Neutral, RelationEvent.BothPlayedHawk) => RelationState.AtWar,
+        (RelationState.Neutral, RelationEvent.OpinionHighEnough) => RelationState.Allied, // pausee...
         // allied state transitions
         (RelationState.Allied, RelationEvent.AllyCalledToWar) => RelationState.AtWar,
         (RelationState.Allied, RelationEvent.AllianceExpired) => RelationState.Neutral,
@@ -61,7 +70,7 @@ public class Relation : MonoBehaviour
 
     //PER TURN UPDATE TICKS
 
-    public void Tick()
+    public void Tick(WorldState world)
     {
         switch (state) {
             case RelationState.Neutral:
@@ -71,7 +80,7 @@ public class Relation : MonoBehaviour
                 TickAllied();
                 break;
             case RelationState.AtWar:
-                TickAtWar();
+                TickAtWar(world);
                 break;
             case RelationState.PeaceDeal:
                 TickPeaceDeal();
@@ -81,21 +90,26 @@ public class Relation : MonoBehaviour
     
     void TickNeutral()
     {
-        // nothing for now
+        if (truceTurnsRemaining > 0) {
+            truceTurnsRemaining -= 1;
+        }
     }
 
-    void TickAtWar()
+    void TickAtWar(WorldState world)
     {
         warTurns += 1;
         if (warTurns >= WAR_DURATION) {
-            //Country countryA = GameManagergetCountry(idA); smthh like this but game manager is not static so i need to figure out how to access it from here, maybe a different class?
-            //Country countryB = GameManager.getCountry(idB);
+            Country countryA = world.GetCountry(idA);
+            Country countryB = world.GetCountry(idB);
+            // combat resolution
+            float loss = Mathf.Min(countryA.militaryPower, countryB.militaryPower) * 0.2f;
+            countryA.militaryPower = Mathf.Max(countryA.militaryPower - loss, 5f);
+            countryB.militaryPower = Mathf.Max(countryB.militaryPower - loss, 5f);
 
-            // combat resolution here: A and B both lose 20% of the weaker side's military power
             warTurns = 0;
-            Fire(RelationEvent.WarEnded); // war ended by timer
-            // modify opinion to neutral for it to increase to have a chance to form alliance again
-            opinion = 10f;
+            truceTurnsRemaining = 4; // can't re-declare war for 4 turns
+            ResetOpinion();
+            Fire(RelationEvent.WarEnded);
         }
     }
 
