@@ -69,8 +69,8 @@ public class Relation
 
 
     //PER TURN UPDATE TICKS
-
-    public void Tick(WorldState world)
+    // i think it could be done in DiplomacySystem but doing it here to keep track of timers and state specific logic more easily
+    public void Tick()
     {
         switch (state) {
             case RelationState.Neutral:
@@ -80,7 +80,7 @@ public class Relation
                 TickAllied();
                 break;
             case RelationState.AtWar:
-                TickAtWar(world);
+                TickAtWar();
                 break;
             case RelationState.PeaceDeal:
                 TickPeaceDeal();
@@ -90,22 +90,11 @@ public class Relation
     
     void TickNeutral()
     {
-        if (truceTurnsRemaining > 0) {
-            truceTurnsRemaining -= 1;
-        }
     }
 
-    void TickAtWar(WorldState world)
+    void TickAtWar()
     {
-        warTurns += 1;
         if (warTurns >= WAR_DURATION) {
-            Country countryA = world.GetCountry(idA);
-            Country countryB = world.GetCountry(idB);
-            // combat resolution
-            float loss = Mathf.Min(countryA.militaryPower, countryB.militaryPower) * 0.2f;
-            countryA.militaryPower = Mathf.Max(countryA.militaryPower - loss, 5f);
-            countryB.militaryPower = Mathf.Max(countryB.militaryPower - loss, 5f);
-
             warTurns = 0;
             truceTurnsRemaining = 4; // can't re-declare war for 4 turns
             ResetOpinion();
@@ -124,7 +113,6 @@ public class Relation
 
     void TickPeaceDeal()
     {
-        // nothing for now
+        truceTurnsRemaining = 5; // set truce timer to prevent immediate re-escalation? after resolving
     }
-
 }

@@ -37,12 +37,12 @@ public static class HawkDove
         // modify probability based on relation state
         p *= state switch {
             RelationState.Allied   => 0.1f,  // almost never attack an ally
-            RelationState.AtWar    => 1.4f,   // already fighting, keep pressure
-            RelationState.PeaceDeal=> 0.2f,   // negotiating means hold fire but still some risk for declaring war again
+            RelationState.AtWar    => 1.5f,   // already fighting, keep pressure
+            RelationState.PeaceDeal=> 0.1f,   // negotiating means hold fire but still some risk for declaring war again
             _                      => 1.0f
         };
 
-        p *= Mathf.Lerp(0.5f, 1.5f, self.aggressionLevel); // aggressive countries push toward Hawk
+        p *= Mathf.Lerp(0.5f, 1.5f, self.GetAiPersonality(self.aiPersonality)); // aggressive countries push toward Hawk
 
         // global power check: if opponent is much stronger, back down
         float powerRatio = opp.militaryPower / Mathf.Max(self.militaryPower, 1f);

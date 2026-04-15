@@ -13,7 +13,6 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        CSVLogger.CreateFile();
         InitRelations();
         // Simulate();
     }
@@ -44,7 +43,7 @@ public class GameManager : MonoBehaviour
         Shuffle(shuffled);
         // process each relation
         foreach (var relation in shuffled) {
-            diplomacy.ProcessPair(relation, world);
+            diplomacy.ProcessPair(relation);
         }
 
         // advancing time

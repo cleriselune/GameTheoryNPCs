@@ -13,10 +13,10 @@ public class WorldState : MonoBehaviour
 
     void CreateCountries()
     {
-        countries.Add(new Country("France", militaryPower: 100, economicStrength: 90, aggressionLevel: 0.6f));
-        countries.Add(new Country("England", militaryPower: 60, economicStrength: 60, aggressionLevel: 0.2f));
-        countries.Add(new Country("Ottomans", militaryPower: 120, economicStrength: 80, aggressionLevel: 0.8f));
-        countries.Add(new Country("Poland", militaryPower: 70, economicStrength: 40, aggressionLevel: 0.5f));
+        countries.Add(new Country("France", militaryPower: 100, economicStrength: 90, treasury: 1000, personality: Country.AiPersonality.Balanced));
+        countries.Add(new Country("England", militaryPower: 60, economicStrength: 100, treasury: 400, personality: Country.AiPersonality.Militaristic));
+        countries.Add(new Country("Ottomans", militaryPower: 120, economicStrength: 80, treasury: 200, personality: Country.AiPersonality.Militaristic));
+        countries.Add(new Country("Poland", militaryPower: 70, economicStrength: 20, treasury: 20, personality: Country.AiPersonality.Democratic));
     }
 
     public Country GetCountry(int id)
