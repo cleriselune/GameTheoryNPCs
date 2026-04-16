@@ -34,15 +34,14 @@ public static class HawkDove
     {
         float p = HawkProbability(V, C);
 
-        // modify probability based on relation state
-        p *= state switch {
-            RelationState.Allied   => 0.1f,  // almost never attack an ally
-            RelationState.AtWar    => 1.5f,   // already fighting, keep pressure
-            RelationState.PeaceDeal=> 0.1f,   // negotiating means hold fire but still some risk for declaring war again
-            _                      => 1.0f
-        };
+        /*
+        i edned up using a 10% chance of calling to war each turn in allied state
+        this method (ChooseStrategy) is only called during Natural state so a state modifier is not needed
+        */
 
-        p *= Mathf.Lerp(0.5f, 1.5f, self.GetAiPersonality(self.aiPersonality)); // aggressive countries push toward Hawk
+        // aggressive countries get up to +0.2 on top of whatever the game theory says, peaceful ones get almost nothing
+        // 0.2 is basically a weight modifier
+        p += self.GetAiPersonality(self.aiPersonality) * 0.2f;
 
         // global power check: if opponent is much stronger, back down
         float powerRatio = opp.militaryPower / Mathf.Max(self.militaryPower, 1f);

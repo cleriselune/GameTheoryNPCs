@@ -54,7 +54,7 @@ public class Relation
         // neutral state transitions
         (RelationState.Neutral, RelationEvent.BothPlayedDove) => RelationState.Allied,
         (RelationState.Neutral, RelationEvent.BothPlayedHawk) => RelationState.AtWar,
-        (RelationState.Neutral, RelationEvent.OpinionHighEnough) => RelationState.Allied, // pausee...
+        (RelationState.Neutral, RelationEvent.OpinionHighEnough) => RelationState.Allied,
         // allied state transitions
         (RelationState.Allied, RelationEvent.AllyCalledToWar) => RelationState.AtWar,
         (RelationState.Allied, RelationEvent.AllianceExpired) => RelationState.Neutral,
