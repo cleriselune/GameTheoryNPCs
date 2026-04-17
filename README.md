@@ -1,6 +1,16 @@
-# Game theory in modeling the behavior of NPC in turn-based strategy game
-[temporary ss i have to update UI]
+<h1 align="center"> GAME THEORY IN MODELING THE BEHAVIOUR OF NPC'S IN A TURN-BASED STRATEGY GAME </h1>
+
+[ss of in-game screen, countries - temporary rectangles (assets are wip), the lines are relation between countries]
+          
+          white - neutral
+          red - at war
+          green - allied 
+          
 <img width="1000" height="561" alt="image" src="https://github.com/user-attachments/assets/ffacbba3-dec9-46ca-b5cc-25267b7aafc5" />
+
+### Video Of Usage
+
+https://github.com/user-attachments/assets/bda94416-00c8-4e10-93b6-083a09a90650
 
 ### Features: 
 #### ***Core features***
@@ -46,6 +56,82 @@
   - WorldState managing countries and relations and also getting the country list and country by id
   - UI with LineRenderer showing relation state by color
   - Process Turn button to click, it adds one year to the game (starting is 1444)
+
+### Game Loop 
+What scripts call to make it all work:
+
+<pre>
+  DiplomacyUI.cs:
+  └── Start()
+      └── BuildLines() -> creates intial lines based on relations between countries
+  └── Update() -> updates line positions with colors when they change with each turn
+  └── OnProcessTurnButton()
+      └── gameManager.ProcessTurn()
+  
+  GameManager.cs:
+  └── Start()
+      └── InitRelations() -> iterates through countries and initializes relations between them
+  └── ProcessTurn() -> simulates a turn (year) added
+      └── diplomacy.ProcessPair(relation) -> for each relation process the pair
+
+  DiplomacySystem.cs:
+  └── ProcessPair(relation)
+      └── relation.Tick() ->updates timers (like war and alliance duration) and specific logic
+      └── switch (relation.state) -> based on the state choose process
+          └── ProcessNeutral(relation)
+          └── ProcessAllied(relation)
+          └── ProcessAtWar(relation)
+          └── ProcessPeaceDeal(relation)
+  
+  Process methods do stuff like:
+    - choose HawkDove strategy based on calculated resource and cost
+    - apply payoff matrix from HawkDove.Payoff (it's added to treasury of a country)
+    - modifies opinion based on chosen strategy
+    - fires RelationEvent (fe. RelationEvent.BothPlayedHawk which calls to war etc.)
+  
+  Relation.cs:
+  └── constructor
+  └── ModifyOpinion(amount)
+  └── ResetOpinion -> to 0
+  └── Fire(relationEvent, world)
+      └── Evaluate(relationEvent) -> FSM states flows, it's visible on ss above
+  └── Tick()
+      └── TickNeutral() -> does nothing
+      └── TickAllied() -> counts alliance turns, if alliance is longer than threshold it resets and fires and event ending the alliance (expiry)
+      └── TickAtWar() -> counts war turns, if war longer than than threshold, resets opinion and fires relation event of war ending, also sets truce turns to 4 to stop soon escalation
+      └── TickPeaceDeal() -> after a peace deal sets truce turns to 5
+    
+  RelationState.cs:
+  └── enum RelationState : Neutral, Allied, AtWar, PeaceDeal
+  └── enum RelationEvent : all possible event to happen (conditions of changing between fsm states)
+    
+    
+  HawkDove.cs:
+  └── enum StrategyType:
+      └── Hawk
+      └── Dove
+  └── Payoff(StrategyType s, StrategyType o, V, C) -> returns (payoff s, payoff o), uses hawk dove matrix to determine the payoff for each country of the two
+      └── HawkProbability(V, C) -> how probable it is for a country to choose hawk based on V / C (resource / cost)
+      └── ChooseStrategy(country a, country b, relationstate, V, C) -> uses probability^, modifies it through ai personality, checks power ratio and using random value determines the strategy type
+    
+  WorldState.cs:
+    list of countries
+    list of relations between countries
+  └── Awake()
+      └── CreateCountries() -> fills the list with pre created countries
+  └── GetCountry(id)
+  └── GetCountries()
+  └── GetRelation(idA, idB)
+  └── GetRelations()
+    
+  Country.cs:
+  └── enum AiPersonality : Democratic, Balanced, Militaristic
+  └── GetAiPersonality(aiPersonality) -> returns a float modifier to agressiveness based on the personality chosen when creating country object
+  └── constructor
+    
+  
+</pre>
+
 
 ### Basic information
 
