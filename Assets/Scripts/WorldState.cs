@@ -36,6 +36,7 @@ public class WorldState : MonoBehaviour
         if (relation == null)
         {
             relation = new Relation(idA, idB);
+            relation.world = this; // world reference 
             relations.Add(relation);
         }
         return relation;

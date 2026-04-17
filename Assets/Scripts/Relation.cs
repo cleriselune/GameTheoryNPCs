@@ -7,13 +7,14 @@ public class Relation
     public RelationState state = RelationState.Neutral; // default state is neutral
     public float opinion = 0; // opinion of each other
     float allicanceTurns = 0; // how many turns have been in alliance, used for a timer of a timed alliance
-    float warTurns = 0; // how many turns have been at war, used for a timer of a timed war
+    public float warTurns = 0; // how many turns have been at war, used for a timer of a timed war
     public int truceTurnsRemaining = 0;
+    public WorldState world;
 
     //
     public const float ALLY_THRESHOLD = 80f; // opinion threshold to form alliance
     public const float ALLIANCE_DURATION = 5f; // duration of alliance in turns (years)
-    public const float WAR_DURATION = 5f; // duration of war in turns (years);; will change this
+    public const float WAR_DURATION = 5f; // duration of war in turns (years)
 
     public Relation(int idA, int idB)
     {
@@ -39,12 +40,12 @@ public class Relation
         opinion = 0;
     }
     
-    public void Fire(RelationEvent relationEvent)
+    public void Fire(RelationEvent relationEvent, WorldState world)
     {
         RelationState next = Evaluate(relationEvent);
         if (next == state) return; // no change in state, so do nothing
 
-        Debug.Log("Relation between " + idA + " and " + idB + " changed from " + state + " to " + next + " due to event: " + relationEvent);
+        Debug.Log("Relation between " + world.GetCountry(idA).countryName + " and " + world.GetCountry(idB).countryName + " changed from " + state + " to " + next + " due to event: " + relationEvent);
         state = next;
     }
 
@@ -94,11 +95,12 @@ public class Relation
 
     void TickAtWar()
     {
+        warTurns += 1;
         if (warTurns >= WAR_DURATION) {
             warTurns = 0;
             truceTurnsRemaining = 4; // can't re-declare war for 4 turns
             ResetOpinion();
-            Fire(RelationEvent.WarEnded);
+            Fire(RelationEvent.WarEnded, world);
         }
     }
 
@@ -107,7 +109,8 @@ public class Relation
         allicanceTurns += 1;
         if (allicanceTurns >= ALLIANCE_DURATION) {
             allicanceTurns = 0;
-            Fire(RelationEvent.AllianceExpired); // alliance expired by timer
+            ModifyOpinion(10f); // increase opinion for having been allies
+            Fire(RelationEvent.AllianceExpired, world); // alliance expired by timer
         }
     }
 

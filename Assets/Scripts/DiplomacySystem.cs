@@ -1,3 +1,4 @@
+
 using UnityEngine;
 
 public class DiplomacySystem : MonoBehaviour
@@ -31,6 +32,7 @@ public class DiplomacySystem : MonoBehaviour
     {
         if (relation.truceTurnsRemaining > 0) {
             relation.truceTurnsRemaining -= 1;
+            Debug.Log("Truce between " + world.GetCountry(relation.idA).countryName + " and " + world.GetCountry(relation.idB).countryName + " with " + relation.truceTurnsRemaining + " turns remaining.");
             return; // still in truce, skip normal processing
         }
 
@@ -45,7 +47,9 @@ public class DiplomacySystem : MonoBehaviour
 
         if (relation.opinion > 50f) { // if opinion is high enough, form alliance regardless of strategies
             relation.ModifyOpinion(+10f);
-            relation.Fire(RelationEvent.OpinionHighEnough);
+            relation.Fire(RelationEvent.OpinionHighEnough, world);
+
+            //Debug.Log("Opinion between " + countryA.countryName + " and " + countryB.countryName + " is high enough to form an alliance, increasing opinion to " + relation.opinion);
         }
         if (strategyA == HawkDove.StrategyType.Hawk && strategyB == HawkDove.StrategyType.Dove) {
             relation.ModifyOpinion(-10f); // playing Hawk against a Dove makes you look aggressiveeeee soo decreasing opinion
@@ -55,23 +59,26 @@ public class DiplomacySystem : MonoBehaviour
             // apply payoffs: hawk gets the resource value, dove gets nothing but also pays no cost
             countryA.treasury += payoffA;
             countryB.treasury += payoffB;
-            Debug.Log(countryA.countryName + " played Hawk against " + countryB.countryName + " gaining " + payoffA + " and country2 played Dove gaining " + payoffB + "; decreasing opinion to " + relation.opinion);
+            //Debug.Log(countryA.countryName + " played Hawk against " + countryB.countryName + " gaining " + payoffA + " and country2 played Dove gaining " + payoffB + "; decreasing opinion to " + relation.opinion);
             
         }
         if (strategyB == HawkDove.StrategyType.Hawk && strategyA == HawkDove.StrategyType.Dove) { 
-            relation.ModifyOpinion(-10f); 
+            relation.ModifyOpinion(-5f); 
 
             var (payoffB, payoffA) = HawkDove.Payoff(strategyB, strategyA, V, C);
             countryB.treasury += payoffB;
             countryA.treasury += payoffA;
 
-            Debug.Log(countryB.countryName + " played Hawk against " + countryA.countryName + " gaining " + payoffB + " and country1 played Dove gaining " + payoffA + "; decreasing opinion to " + relation.opinion);
+            //Debug.Log(countryB.countryName + " played Hawk against " + countryA.countryName + " gaining " + payoffB + " and country1 played Dove gaining " + payoffA + "; decreasing opinion to " + relation.opinion);
         }
         if (strategyA == HawkDove.StrategyType.Dove && strategyB == HawkDove.StrategyType.Dove) {
             relation.ModifyOpinion(+10f);
-            relation.Fire(RelationEvent.BothPlayedDove); // if both played Dove, form alliance
+            relation.Fire(RelationEvent.BothPlayedDove, world); // if both played Dove, form alliance
         }
         if (strategyA == HawkDove.StrategyType.Hawk && strategyB == HawkDove.StrategyType.Hawk) {
+
+            relation.ModifyOpinion(-10f); // both playing Hawk is very aggressive, so decrease opinion a lot
+
             if (relation.opinion < -50f) { // only escalate if already hostile
 
                 var (payoffA, payoffB) = HawkDove.Payoff(strategyA, strategyB, V, C);
@@ -79,10 +86,12 @@ public class DiplomacySystem : MonoBehaviour
                 // V - C / 2
                 countryA.treasury += payoffA;
                 countryB.treasury += payoffB;
-                Debug.Log("WAR: " + countryA.countryName + " vs " + countryB.countryName + " gaining payoffA: " + payoffA + " and payoffB: " + payoffB + "; opinion" + relation.opinion);
-                relation.Fire(RelationEvent.BothPlayedHawk);
+                //Debug.Log("WAR: " + countryA.countryName + " vs " + countryB.countryName + " gaining payoffA: " + payoffA + " and payoffB: " + payoffB + "; opinion" + relation.opinion);
+                relation.Fire(RelationEvent.BothPlayedHawk, world);
             }
         }
+
+        Debug.Log($"{countryA.countryName} ({strategyA}) vs {countryB.countryName} ({strategyB}) | opinion: {relation.opinion:F0} | truce: {relation.truceTurnsRemaining}");
 
     }
 
@@ -101,7 +110,7 @@ public class DiplomacySystem : MonoBehaviour
 
         //random change of ally calling to war each turn, based on some factors like threat level,, maybe random events later on
         if (Random.value < 0.1f) {
-            relation.Fire(RelationEvent.AllyCalledToWar);
+            relation.Fire(RelationEvent.AllyCalledToWar, world);
         }
 
     }
@@ -121,11 +130,9 @@ public class DiplomacySystem : MonoBehaviour
         countryB.treasury += payoffB;
         // damage = negative payoff when C > V
 
-        // preventing nevative military power by setting a minimum threshold
-
-        // random chance of offering peace each turn, maybe based on war duration or losses?
+        // random chance of offering peace each turn 10%
         if (Random.value < 0.1f) {
-            relation.Fire(RelationEvent.PeaceOffered); // for not leaving this
+            relation.Fire(RelationEvent.PeaceOffered, world);
         }
     }
 
@@ -134,9 +141,11 @@ public class DiplomacySystem : MonoBehaviour
         // chance of accepting or rejecting the peace deal
 
         if (Random.value < 0.5f) {
-            relation.Fire(RelationEvent.PeaceAccepted);
+            relation.Fire(RelationEvent.PeaceAccepted, world);
+            relation.ResetOpinion(); // reset opinion after peace deal resolves
         } else {
-            relation.Fire(RelationEvent.PeaceRejected);
+            relation.Fire(RelationEvent.PeaceRejected, world);
+            relation.warTurns = 0; // reset war duration if peace rejected
         }
     }
 
