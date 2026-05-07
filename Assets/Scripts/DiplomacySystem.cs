@@ -1,4 +1,5 @@
 
+
 using UnityEngine;
 
 public class DiplomacySystem : MonoBehaviour
@@ -73,6 +74,13 @@ public class DiplomacySystem : MonoBehaviour
         }
         if (strategyA == HawkDove.StrategyType.Dove && strategyB == HawkDove.StrategyType.Dove) {
             relation.ModifyOpinion(+10f);
+
+            // payoff should be the same
+            var (payoffA, payoffB) = HawkDove.Payoff(strategyA, strategyB, V, C);
+            countryA.treasury += payoffA;
+            countryB.treasury += payoffB;
+
+            //Debug.Log("payoffA: " + payoffA + " payoffB: " + payoffB);
             relation.Fire(RelationEvent.BothPlayedDove, world); // if both played Dove, form alliance
         }
         if (strategyA == HawkDove.StrategyType.Hawk && strategyB == HawkDove.StrategyType.Hawk) {
