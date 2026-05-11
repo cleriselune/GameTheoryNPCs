@@ -6,10 +6,25 @@ public class DiplomacySystem : MonoBehaviour
 {
     public WorldState world;
 
+    /// NUMBERS
+    public int numWars = 0;
+    public int numAlliances = 0;
+    public float warsDuration = 0;
+    public float alliancesDuration = 0;
+
+    public void RecordLogs(int year)
+    {
+        Debug.Log($"============ YEAR {year} RECORDS ============");
+        Debug.Log($"Wars: {numWars}");
+        Debug.Log($"Alliances: {numAlliances}");
+        Debug.Log($"Wars Duration: {warsDuration}");
+        Debug.Log($"Alliances Duration: {alliancesDuration}");
+    }
+
     // called by TurnManager each turn for every pair of countries
     public void ProcessPair(Relation relation)
     {
-        relation.Tick(); // update timers and handle state-specific logic
+        relation.Tick(); // update timers and state-specific logic first
 
         // proccess behaviour based on he state^ and give them payoffs and opions etcc
         switch (relation.state)
@@ -49,6 +64,7 @@ public class DiplomacySystem : MonoBehaviour
         if (relation.opinion > 50f) { // if opinion is high enough, form alliance regardless of strategies
             relation.ModifyOpinion(+10f);
             relation.Fire(RelationEvent.OpinionHighEnough, world);
+            numAlliances++;
 
             //Debug.Log("Opinion between " + countryA.countryName + " and " + countryB.countryName + " is high enough to form an alliance, increasing opinion to " + relation.opinion);
         }
@@ -82,6 +98,7 @@ public class DiplomacySystem : MonoBehaviour
 
             //Debug.Log("payoffA: " + payoffA + " payoffB: " + payoffB);
             relation.Fire(RelationEvent.BothPlayedDove, world); // if both played Dove, form alliance
+            numAlliances++;
         }
         if (strategyA == HawkDove.StrategyType.Hawk && strategyB == HawkDove.StrategyType.Hawk) {
 
@@ -96,6 +113,7 @@ public class DiplomacySystem : MonoBehaviour
                 countryB.treasury += payoffB;
                 //Debug.Log("WAR: " + countryA.countryName + " vs " + countryB.countryName + " gaining payoffA: " + payoffA + " and payoffB: " + payoffB + "; opinion" + relation.opinion);
                 relation.Fire(RelationEvent.BothPlayedHawk, world);
+                numWars++;
             }
         }
 
@@ -105,6 +123,7 @@ public class DiplomacySystem : MonoBehaviour
 
     void ProcessAllied(Relation relation)
     {
+        alliancesDuration += 1;
         Country countryA = world.GetCountry(relation.idA);
         Country countryB = world.GetCountry(relation.idB);
 
@@ -116,15 +135,22 @@ public class DiplomacySystem : MonoBehaviour
 
         relation.ModifyOpinion(+5f); // opinion strengthens over time in alliance
 
+        if (relation.allicanceTurns > 10 && Random.value < 0.1f) { // if alliance has lasted more than 10 turns, add random chance to end it
+            relation.Fire(RelationEvent.AllianceExpired, world);
+        }
+
         //random change of ally calling to war each turn, based on some factors like threat level,, maybe random events later on
-        if (Random.value < 0.1f) {
+        if (Random.value < 0.02f) {
             relation.Fire(RelationEvent.AllyCalledToWar, world);
+            numWars++;
         }
 
     }
     
     void ProcessAtWar(Relation relation)
     {
+        warsDuration += 1;
+        
         Country countryA = world.GetCountry(relation.idA);
         Country countryB = world.GetCountry(relation.idB);
 
@@ -138,8 +164,14 @@ public class DiplomacySystem : MonoBehaviour
         countryB.treasury += payoffB;
         // damage = negative payoff when C > V
 
-        // random chance of offering peace each turn 10%
-        if (Random.value < 0.1f) {
+        // if war duration more than 3 turns, add random change to end it
+        if (relation.warTurns > 3 && Random.value < 0.1f) {
+            relation.Fire(RelationEvent.WarEnded, world);
+            relation.truceTurnsRemaining = 5;
+        }
+
+        // random chance of offering peace each turn 2%
+        if (Random.value < 0.02f) {
             relation.Fire(RelationEvent.PeaceOffered, world);
         }
     }
@@ -153,6 +185,7 @@ public class DiplomacySystem : MonoBehaviour
             relation.ResetOpinion(); // reset opinion after peace deal resolves
         } else {
             relation.Fire(RelationEvent.PeaceRejected, world);
+            numWars++;
             relation.warTurns = 0; // reset war duration if peace rejected
         }
     }

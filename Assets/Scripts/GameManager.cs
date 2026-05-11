@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
@@ -26,10 +26,10 @@ public class GameManager : MonoBehaviour
             {
                 if (c[i] == c[j]) continue; // skip same country, handled in Relation constructor but just in case
                 world.GetRelation(i, j); // this will create a relation if it doesn't exist
-                print("Initialized relation between " + c[i].countryName + " and " + c[j].countryName + " with initial opinion " + world.GetRelation(i, j).opinion);
+                Debug.Log("Initialized relation between " + c[i].countryName + " and " + c[j].countryName + " with initial opinion " + world.GetRelation(i, j).opinion);
             }
         }
-        print("Initialized " + world.GetCountries().Count + " countries and " + world.GetCountries().Count * (world.GetCountries().Count - 1) / 2 + " relations.");
+        Debug.Log("Initialized " + world.GetCountries().Count + " countries and " + world.GetCountries().Count * (world.GetCountries().Count - 1) / 2 + " relations.");
     
 
     }
@@ -49,6 +49,7 @@ public class GameManager : MonoBehaviour
         // advancing time
         currentYear++;
         Debug.Log($"=== Year {currentYear} complete ===");
+        diplomacy.RecordLogs(currentYear);
     }
 
     void Shuffle<T>(List<T> list) {

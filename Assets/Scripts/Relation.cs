@@ -6,15 +6,10 @@ public class Relation
     public int idB;
     public RelationState state = RelationState.Neutral; // default state is neutral
     public float opinion = 0; // opinion of each other
-    float allicanceTurns = 0; // how many turns have been in alliance, used for a timer of a timed alliance
+    public float allicanceTurns = 0; // how many turns have been in alliance, used for a timer of a timed alliance
     public float warTurns = 0; // how many turns have been at war, used for a timer of a timed war
     public int truceTurnsRemaining = 0;
     public WorldState world;
-
-    //
-    public const float ALLY_THRESHOLD = 80f; // opinion threshold to form alliance
-    public const float ALLIANCE_DURATION = 5f; // duration of alliance in turns (years)
-    public const float WAR_DURATION = 5f; // duration of war in turns (years)
 
     public Relation(int idA, int idB)
     {
@@ -70,7 +65,6 @@ public class Relation
 
 
     //PER TURN UPDATE TICKS
-    // i think it could be done in DiplomacySystem but doing it here to keep track of timers and state specific logic more easily
     public void Tick()
     {
         switch (state) {
@@ -95,23 +89,12 @@ public class Relation
 
     void TickAtWar()
     {
-        warTurns += 1;
-        if (warTurns >= WAR_DURATION) {
-            warTurns = 0;
-            truceTurnsRemaining = 4; // can't re-declare war for 4 turns
-            ResetOpinion();
-            Fire(RelationEvent.WarEnded, world);
-        }
+        warTurns++;
     }
 
     void TickAllied()
     {
-        allicanceTurns += 1;
-        if (allicanceTurns >= ALLIANCE_DURATION) {
-            allicanceTurns = 0;
-            ModifyOpinion(10f); // increase opinion for having been allies
-            Fire(RelationEvent.AllianceExpired, world); // alliance expired by timer
-        }
+        allicanceTurns++;
     }
 
     void TickPeaceDeal()
