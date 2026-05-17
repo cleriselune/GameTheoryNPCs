@@ -1,5 +1,4 @@
 
-
 using UnityEngine;
 
 public class DiplomacySystem : MonoBehaviour
@@ -163,6 +162,12 @@ public class DiplomacySystem : MonoBehaviour
         countryA.treasury += payoffA;
         countryB.treasury += payoffB;
         // damage = negative payoff when C > V
+
+        countryA.militaryPower -= InjuryCost(countryA, countryB) / 10f;
+        countryB.militaryPower -= InjuryCost(countryA, countryB) / 10f;
+        if (countryA.militaryPower < 0) countryA.militaryPower = 1;
+        if (countryB.militaryPower < 0) countryB.militaryPower = 1; 
+        Debug.Log("WAR: " + countryA.countryName + " vs " + countryB.countryName + " losing military power, now at " + countryA.militaryPower + " and " + countryB.militaryPower);
 
         // if war duration more than 3 turns, add random change to end it
         if (relation.warTurns > 3 && Random.value < 0.1f) {
