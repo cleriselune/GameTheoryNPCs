@@ -1,14 +1,14 @@
 <h1 align="center"> GAME THEORY IN MODELING THE BEHAVIOUR OF NPC'S IN A TURN-BASED STRATEGY GAME </h1>
 
-[ss of in-game screen, countries - temporary rectangles (assets are wip), the lines are relation between countries]
+[ss of in-game screen, countries, the lines are relation between countries]
           
           white - neutral
           red - at war
           green - allied 
           
-<img width="1000" height="561" alt="image" src="https://github.com/user-attachments/assets/ffacbba3-dec9-46ca-b5cc-25267b7aafc5" />
+<img width="1280" height="719" alt="image" src="https://github.com/user-attachments/assets/a179afde-a8a0-4945-aba1-3046d898ae40" />
 
-### Video Of Usage
+### Video Of Usage [with old visualization, will update]
 
 https://github.com/user-attachments/assets/bda94416-00c8-4e10-93b6-083a09a90650
 
